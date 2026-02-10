@@ -79,7 +79,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   // 3. Handle Code/ID: Ensure String (fix for numeric IDs in Sheet)
                   code: (e.code || '').toString().trim(),
                   // 4. Handle Password: Ensure String (fix for numeric passwords '1234' in Sheet)
-                  password: (e.password || '').toString().trim()
+                  password: (e.password || '').toString().trim(),
+                  // 5. Handle Photo URL
+                  photoUrl: (e.photoUrl || '').toString().trim()
                 };
               });
               setEmployees(cleanEmployees);

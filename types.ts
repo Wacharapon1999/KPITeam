@@ -1,3 +1,4 @@
+
 export enum PeriodType {
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
@@ -34,6 +35,7 @@ export interface Employee {
   email: string;
   role: UserRole;
   password?: string; // For simple auth simulation
+  photoUrl?: string; // URL for profile picture
 }
 
 export interface KPI {
@@ -44,6 +46,8 @@ export interface KPI {
   weight: number;
   period: PeriodType;
   description: string;
+  // New field: Map evaluation level to list of descriptions
+  evaluationRules?: Partial<Record<EvaluationLevel, string[]>>;
 }
 
 export interface Assignment {
@@ -99,10 +103,10 @@ export const LEVEL_SCORES: Record<EvaluationLevel, number> = {
 };
 
 export const LEVEL_COLORS: Record<EvaluationLevel, string> = {
-  [EvaluationLevel.F]: 'bg-red-500 text-white',
-  [EvaluationLevel.UP]: 'bg-orange-400 text-white',
-  [EvaluationLevel.PP]: 'bg-yellow-400 text-black',
-  [EvaluationLevel.GP]: 'bg-lime-400 text-black',
-  [EvaluationLevel.CP]: 'bg-teal-500 text-white',
-  [EvaluationLevel.EP]: 'bg-purple-600 text-white',
+  [EvaluationLevel.F]: 'bg-brand-red text-white',
+  [EvaluationLevel.UP]: 'bg-orange-500 text-white',
+  [EvaluationLevel.PP]: 'bg-yellow-500 text-black',
+  [EvaluationLevel.GP]: 'bg-lime-500 text-black',
+  [EvaluationLevel.CP]: 'bg-brand-green/80 text-white',
+  [EvaluationLevel.EP]: 'bg-brand-green text-white',
 };

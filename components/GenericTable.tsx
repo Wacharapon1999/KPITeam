@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Edit, Trash2, Plus } from 'lucide-react';
 
@@ -25,11 +26,11 @@ export function GenericTable<T extends { id: string }>({
 }: GenericTableProps<T>) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-teal-500 to-teal-600 text-white">
+      <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-brand-green to-[#005a35] text-white">
         <h3 className="text-lg font-semibold">{title}</h3>
         <button 
           onClick={onAdd}
-          className="flex items-center gap-2 bg-white text-teal-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-2 bg-white text-brand-green px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4" /> เพิ่มข้อมูล
         </button>
@@ -56,10 +57,10 @@ export function GenericTable<T extends { id: string }>({
                     </td>
                   ))}
                   <td className="px-6 py-4 text-right space-x-2">
-                    <button onClick={() => onEdit(item)} className="p-2 text-orange-400 hover:bg-orange-50 rounded-full transition-colors">
+                    <button onClick={() => onEdit(item)} className="p-2 text-orange-500 hover:bg-orange-50 rounded-full transition-colors">
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button onClick={() => onDelete(item)} className="p-2 text-red-400 hover:bg-red-50 rounded-full transition-colors">
+                    <button onClick={() => onDelete(item)} className="p-2 text-brand-red hover:bg-brand-red/10 rounded-full transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </td>
