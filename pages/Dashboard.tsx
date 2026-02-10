@@ -274,32 +274,38 @@ const Dashboard = () => {
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
               <h3 className="text-lg font-bold text-gray-800 mb-6">สรุปผลงานพนักงานในกลุ่ม</h3>
               <div className="space-y-3">
-                {filteredEmployees.map(emp => {
-                  const empRecs = records.filter(r => r.employeeId === emp.id);
-                  const score = empRecs.length ? empRecs.reduce((sum, r) => sum + r.score, 0) / empRecs.length : 0;
-                  const status = getStatusInfo(score);
-                  const StatusIcon = status.icon;
-                  return (
-                    <div key={emp.id} className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-200 transition-all cursor-default">
-                      <div className="flex items-center gap-3 min-w-0">
-                        {emp.photoUrl ? (
-                           <img src={emp.photoUrl} alt="" className="w-8 h-8 rounded-xl object-cover" />
-                        ) : (
-                           <div className={`p-2 rounded-xl ${status.light} ${status.text} flex-shrink-0`}>
-                             <StatusIcon className="w-4 h-4" />
-                           </div>
-                        )}
-                        <div className="truncate">
-                          <div className="text-sm font-bold text-gray-800 truncate">{emp.name}</div>
-                          <div className="text-[9px] text-gray-400 font-bold uppercase">{status.label}</div>
+                {filteredEmployees
+                  .map(emp => {
+                    const empRecs = records.filter(r => r.employeeId === emp.id);
+                    const score = empRecs.length ? empRecs.reduce((sum, r) => sum + r.score, 0) / empRecs.length : 0;
+                    return { emp, score };
+                  })
+                  .sort((a,b) => b.score - a.score)
+                  .slice(0, 6)
+                  .map(({ emp, score }) => {
+                    const status = getStatusInfo(score);
+                    const StatusIcon = status.icon;
+                    return (
+                      <div key={emp.id} className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-200 transition-all cursor-default">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {emp.photoUrl ? (
+                             <img src={emp.photoUrl} alt="" className="w-8 h-8 rounded-xl object-cover" />
+                          ) : (
+                             <div className={`p-2 rounded-xl ${status.light} ${status.text} flex-shrink-0`}>
+                               <StatusIcon className="w-4 h-4" />
+                             </div>
+                          )}
+                          <div className="truncate">
+                            <div className="text-sm font-bold text-gray-800 truncate">{emp.name}</div>
+                            <div className="text-[9px] text-gray-400 font-bold uppercase">{status.label}</div>
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0 ml-2">
+                          <span className="text-base font-black text-brand-green">{score.toFixed(1)}</span>
                         </div>
                       </div>
-                      <div className="text-right flex-shrink-0 ml-2">
-                        <span className="text-base font-black text-brand-green">{score.toFixed(1)}</span>
-                      </div>
-                    </div>
-                  );
-                }).sort((a,b) => b.score - a.score).slice(0, 6)}
+                    );
+                  })}
               </div>
             </div>
           )}
