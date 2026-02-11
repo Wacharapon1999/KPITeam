@@ -5,7 +5,7 @@ import { useAppStore } from '../services/storage';
 import { LEVEL_SCORES, EvaluationLevel, LEVEL_COLORS, UserRole, KPIRecord as IKPIRecord, KPI, LevelRule, Activity } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../contexts/AuthContext';
-import { Save, User, CheckCircle2, ChevronDown, ChevronRight, AlertCircle, Calendar, Check } from 'lucide-react';
+import { Save, User, CheckCircle2, ChevronDown, ChevronRight, AlertCircle, Calendar, Check, PenLine } from 'lucide-react';
 
 // --- Helper Data & Constants ---
 
@@ -126,11 +126,7 @@ const KPIRow: React.FC<KPIRowProps> = ({ kpi, assignmentWeight, activities, reco
 
   const handleLevelSelect = (lvl: EvaluationLevel) => {
     setLevel(lvl);
-    // Auto-fill note if empty
-    if (!note) {
-      const items = activeRubric[lvl]?.items || [];
-      if (items.length > 0) setNote(items.map((it, i) => `${i+1}. ${it}`).join('\n'));
-    }
+    // Removed auto-fill logic to allow manual note entry
   };
 
   const selectedActivity = activities.find(a => a.id === activityId);
@@ -258,10 +254,13 @@ const KPIRow: React.FC<KPIRowProps> = ({ kpi, assignmentWeight, activities, reco
           {/* 3. Note & Save */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
              <div className="lg:col-span-2">
-               <label className="block text-sm font-bold text-gray-700 mb-2">บันทึกเพิ่มเติม (Note)</label>
+               <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                 <PenLine className="w-4 h-4 text-brand-green" />
+                 บันทึกเพิ่มเติม (Note)
+               </label>
                <textarea 
-                 className="w-full border-gray-200 rounded-xl bg-gray-50 p-3 text-sm focus:border-brand-green focus:ring-4 focus:ring-brand-green/10 transition-all min-h-[80px]"
-                 placeholder="รายละเอียดเพิ่มเติม..."
+                 className="w-full border-gray-300 rounded-xl bg-white p-3 text-sm focus:border-brand-green focus:ring-4 focus:ring-brand-green/10 transition-all min-h-[100px] shadow-sm placeholder:text-gray-400"
+                 placeholder="ระบุเหตุผล หรือ รายละเอียดประกอบการประเมิน..."
                  value={note}
                  onChange={e => setNote(e.target.value)}
                />
@@ -283,7 +282,6 @@ const KPIRow: React.FC<KPIRowProps> = ({ kpi, assignmentWeight, activities, reco
     </div>
   );
 };
-
 
 // --- Main Component ---
 
