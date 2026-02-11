@@ -80,7 +80,8 @@ export interface KPIRecord {
   score: number;
   weight: number;
   weightedScore: number;
-  note: string;
+  note: string;      // Stores the Rubric/Criteria description (System generated)
+  userNote?: string; // Stores the additional user comment (Manual input)
 }
 
 export interface LevelRule {

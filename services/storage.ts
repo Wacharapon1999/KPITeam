@@ -89,7 +89,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setKPIs(normalize(data.kpis));
               setAssignments(normalize(data.assignments));
               setActivities(normalize(data.activities));
-              setRecords(normalize(data.records));
+              
+              // Normalize Records ensuring userNote exists
+              const cleanRecords = normalize(data.records).map((r: any) => ({
+                ...r,
+                userNote: r.userNote || ''
+              }));
+              setRecords(cleanRecords);
               
               setLevelRules(data.levelRules || initialLevelRules);
             }

@@ -90,8 +90,8 @@ export const initialActivities: Activity[] = [
 ];
 
 export const initialRecords: KPIRecord[] = [
-  { id: 'r1', date: '2023-10-01', employeeId: 'e1', kpiId: 'k1', activityId: 'ac1', activityName: 'Pull Request Review', period: 'monthly', periodDetail: 'month-10-2023', level: EvaluationLevel.CP, score: 4, weight: 50, weightedScore: 2.0, note: 'Good job' },
-  { id: 'r2', date: '2023-10-01', employeeId: 'e2', kpiId: 'k2', activityId: 'ac2', activityName: 'Interviewing', period: 'monthly', periodDetail: 'month-10-2023', level: EvaluationLevel.GP, score: 3, weight: 40, weightedScore: 1.2, note: 'Met target' },
+  { id: 'r1', date: '2023-10-01', employeeId: 'e1', kpiId: 'k1', activityId: 'ac1', activityName: 'Pull Request Review', period: 'monthly', periodDetail: 'month-10-2023', level: EvaluationLevel.CP, score: 4, weight: 50, weightedScore: 2.0, note: 'Code สะอาด อ่านง่าย ตามมาตรฐาน\nส่งมอบงานก่อนกำหนด 10%', userNote: 'Good job' },
+  { id: 'r2', date: '2023-10-01', employeeId: 'e2', kpiId: 'k2', activityId: 'ac2', activityName: 'Interviewing', period: 'monthly', periodDetail: 'month-10-2023', level: EvaluationLevel.GP, score: 3, weight: 40, weightedScore: 1.2, note: 'หาคนได้ครบ 100% ตามเป้าหมาย\nปิดรับสมัครภายใน SLA 45 วัน', userNote: 'Met target' },
 ];
 
 // Sample LevelRules simulating data from "LevelRules" Sheet

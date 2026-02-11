@@ -57,14 +57,15 @@ const KPIRow: React.FC<KPIRowProps> = ({ kpi, assignmentWeight, activities, reco
   // Local state for form inputs inside this KPI card
   const [activityId, setActivityId] = useState(record?.activityId || '');
   const [level, setLevel] = useState<EvaluationLevel | ''>(record?.level || '');
-  const [note, setNote] = useState(record?.note || '');
+  // userNote is now separate from the rubric note
+  const [userNote, setUserNote] = useState(record?.userNote || '');
   const [isSaving, setIsSaving] = useState(false);
   
   // Sync state if record prop updates (e.g. after save or period change)
   useEffect(() => {
     setActivityId(record?.activityId || '');
     setLevel(record?.level || '');
-    setNote(record?.note || '');
+    setUserNote(record?.userNote || '');
   }, [record]);
 
   // Auto-select activity if there is only one and none is currently selected
@@ -111,6 +112,11 @@ const KPIRow: React.FC<KPIRowProps> = ({ kpi, assignmentWeight, activities, reco
     // Find Activity Name
     const activityName = activities.find(a => a.id === activityId)?.name || '';
 
+    // Calculate Rubric Note (Standard Criteria) to save in 'note' field
+    // This ensures the original rubric data is saved as the main note
+    const rubricItems = activeRubric[level]?.items || [];
+    const rubricNote = rubricItems.map((it, i) => `${i+1}. ${it}`).join('\n');
+
     await onSave({
       kpiId: kpi.id,
       activityId,
@@ -119,14 +125,15 @@ const KPIRow: React.FC<KPIRowProps> = ({ kpi, assignmentWeight, activities, reco
       score,
       weight: assignmentWeight,
       weightedScore,
-      note
+      note: rubricNote, // Save Rubric Description here
+      userNote: userNote // Save Manual Comment here (New Field)
     });
     setIsSaving(false);
   };
 
   const handleLevelSelect = (lvl: EvaluationLevel) => {
     setLevel(lvl);
-    // Removed auto-fill logic to allow manual note entry
+    // Note is now separate, no auto-fill needed for userNote
   };
 
   const selectedActivity = activities.find(a => a.id === activityId);
@@ -261,8 +268,8 @@ const KPIRow: React.FC<KPIRowProps> = ({ kpi, assignmentWeight, activities, reco
                <textarea 
                  className="w-full border-gray-300 rounded-xl bg-white p-3 text-sm focus:border-brand-green focus:ring-4 focus:ring-brand-green/10 transition-all min-h-[100px] shadow-sm placeholder:text-gray-400"
                  placeholder="ระบุเหตุผล หรือ รายละเอียดประกอบการประเมิน..."
-                 value={note}
-                 onChange={e => setNote(e.target.value)}
+                 value={userNote}
+                 onChange={e => setUserNote(e.target.value)}
                />
              </div>
              <div className="flex flex-col justify-end">
@@ -364,7 +371,8 @@ const KPIRecord = () => {
       score: data.score || 0,
       weight: data.weight || 0,
       weightedScore: data.weightedScore || 0,
-      note: data.note || ''
+      note: data.note || '',
+      userNote: data.userNote || ''
     };
 
     await saveRecord(newRecord);
