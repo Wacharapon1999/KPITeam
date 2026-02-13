@@ -81,6 +81,9 @@ export interface KPIRecord {
   weightedScore: number;
   note: string;
   userNote?: string;
+  progress?: number; // 0-100
+  detailProgress?: string; // Details about the progress
+  managerComment?: string; // Feedback from manager
 }
 
 // --- Competency Types ---

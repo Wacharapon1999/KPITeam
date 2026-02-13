@@ -145,7 +145,10 @@ function getRecordsData() {
     weight: row[10],
     weightedScore: row[11],
     note: row[12],      
-    userNote: row[13]   
+    userNote: row[13],
+    progress: row[14] || 0,
+    detailProgress: row[15] || '',
+    managerComment: row[16] || ''
   }));
 }
 
@@ -224,7 +227,10 @@ function saveRecord(item) {
     item.weight,
     item.weightedScore,
     item.note,      
-    item.userNote   
+    item.userNote,
+    item.progress || 0,
+    item.detailProgress || '',
+    item.managerComment || ''
   ];
   
   if (rowIndex > 0) {
@@ -287,7 +293,7 @@ function getSheet(name) {
   if (!sheet) {
     sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(name);
     if (name === SHEETS.RECORDS) {
-      sheet.appendRow(['id', 'date', 'employeeId', 'kpiId', 'activityId', 'activityName', 'period', 'periodDetail', 'level', 'score', 'weight', 'weightedScore', 'note', 'userNote']);
+      sheet.appendRow(['id', 'date', 'employeeId', 'kpiId', 'activityId', 'activityName', 'period', 'periodDetail', 'level', 'score', 'weight', 'weightedScore', 'note', 'userNote', 'progress', 'detailProgress', 'managerComment']);
     } else if (name === SHEETS.COMPETENCY_RECORDS) {
       sheet.appendRow(['id', 'date', 'employeeId', 'competencyId', 'period', 'level', 'score', 'weight', 'weightedScore']);
     } else if (name === SHEETS.COMPETENCIES) {
