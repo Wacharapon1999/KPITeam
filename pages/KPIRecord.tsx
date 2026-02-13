@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Layout from '../components/Layout';
 import { useAppStore } from '../services/storage';
-import { LEVEL_SCORES, EvaluationLevel, LEVEL_COLORS, UserRole, KPIRecord as IKPIRecord, KPI, LevelRule, Activity } from '../types';
+import { LEVEL_SCORES, EvaluationLevel, LEVEL_COLORS, UserRole, KPIRecord as IKPIRecord, KPI, LevelRule, Activity, PeriodType } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../contexts/AuthContext';
 import { Save, User, CheckCircle2, ChevronDown, ChevronRight, AlertCircle, Calendar, Check, PenLine } from 'lucide-react';
@@ -113,7 +113,6 @@ const KPIRow: React.FC<KPIRowProps> = ({ kpi, assignmentWeight, activities, reco
     const activityName = activities.find(a => a.id === activityId)?.name || '';
 
     // Calculate Rubric Note (Standard Criteria) to save in 'note' field
-    // This ensures the original rubric data is saved as the main note
     const rubricItems = activeRubric[level]?.items || [];
     const rubricNote = rubricItems.map((it, i) => `${i+1}. ${it}`).join('\n');
 
@@ -125,15 +124,14 @@ const KPIRow: React.FC<KPIRowProps> = ({ kpi, assignmentWeight, activities, reco
       score,
       weight: assignmentWeight,
       weightedScore,
-      note: rubricNote, // Save Rubric Description here
-      userNote: userNote // Save Manual Comment here (New Field)
+      note: rubricNote, 
+      userNote: userNote 
     });
     setIsSaving(false);
   };
 
   const handleLevelSelect = (lvl: EvaluationLevel) => {
     setLevel(lvl);
-    // Note is now separate, no auto-fill needed for userNote
   };
 
   const selectedActivity = activities.find(a => a.id === activityId);
@@ -297,7 +295,7 @@ const KPIRecord = () => {
   const { user } = useAuth();
   
   const [selectedEmpId, setSelectedEmpId] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState('monthly');
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('quarterly');
   const [selectedPeriodDetail, setSelectedPeriodDetail] = useState('');
   const [expandedKpiId, setExpandedKpiId] = useState<string | null>(null);
 
@@ -307,10 +305,18 @@ const KPIRecord = () => {
        setSelectedEmpId(user.id);
     }
     
-    // Default to current month/year
     const now = new Date();
-    const currentMonth = `month-${now.getMonth() + 1}-${now.getFullYear()}`;
-    setSelectedPeriodDetail(currentMonth);
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    
+    // Default to current quarter
+    let q = 'q1';
+    if (month > 3 && month <= 6) q = 'q2';
+    else if (month > 6 && month <= 9) q = 'q3';
+    else if (month > 9) q = 'q4';
+    
+    setSelectedPeriod('quarterly');
+    setSelectedPeriodDetail(`${q}-${year}`);
   }, [user]);
 
   const selectedEmployee = useMemo(() => employees.find(e => e.id === selectedEmpId), [employees, selectedEmpId]);
@@ -325,10 +331,12 @@ const KPIRecord = () => {
        return Array.from({ length: 12 }, (_, i) => (
         <option key={i} value={`month-${i + 1}-${year}`}>Month {i + 1} / {year}</option>
       ));
+    } else if (selectedPeriod === 'quarterly') {
+      return ['Q1', 'Q2', 'Q3', 'Q4'].map(q => (
+        <option key={q} value={`${q.toLowerCase()}-${year}`}>{q} / {year}</option>
+      ));
     }
-    return ['Q1', 'Q2', 'Q3', 'Q4'].map(q => (
-      <option key={q} value={`${q.toLowerCase()}-${year}`}>{q} / {year}</option>
-    ));
+    return null;
   };
 
   // Get Assigned KPIs
@@ -355,7 +363,6 @@ const KPIRecord = () => {
   const handleSaveRecord = async (data: Partial<IKPIRecord>) => {
     if (!selectedEmpId) return;
 
-    // Check if record exists for this KPI in this period to update instead of create new
     const existing = currentPeriodRecords.find(r => r.kpiId === data.kpiId);
     
     const newRecord: IKPIRecord = {
@@ -376,12 +383,11 @@ const KPIRecord = () => {
     };
 
     await saveRecord(newRecord);
-    // Note: No need to refresh manually, store update triggers re-render
-    setExpandedKpiId(null); // Close accordion on save
+    setExpandedKpiId(null); 
   };
 
   return (
-    <Layout title="บันทึกผล KPI">
+    <Layout title="KPI Detail">
       <div className="max-w-6xl mx-auto space-y-6">
         
         {/* Top Bar: Context Selector */}
@@ -411,10 +417,28 @@ const KPIRecord = () => {
              </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto bg-gray-50 p-2 rounded-xl border border-gray-200">
-             <Calendar className="w-5 h-5 text-gray-400 ml-2" />
-             <div className="h-8 w-px bg-gray-200 mx-1"></div>
-             <div>
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto bg-gray-50 p-2 rounded-xl border border-gray-200">
+             <div className="flex items-center gap-2">
+               <Calendar className="w-5 h-5 text-gray-400 ml-2" />
+               <select 
+                 className="bg-transparent border-none p-0 text-sm font-bold text-gray-700 focus:ring-0 cursor-pointer w-28"
+                 value={selectedPeriod}
+                 onChange={e => {
+                   setSelectedPeriod(e.target.value);
+                   // Reset period detail to current year default
+                   const year = new Date().getFullYear();
+                   if (e.target.value === 'quarterly') setSelectedPeriodDetail(`q1-${year}`);
+                   else if (e.target.value === 'monthly') setSelectedPeriodDetail(`month-1-${year}`);
+                   else if (e.target.value === 'weekly') setSelectedPeriodDetail(`week-1-${year}`);
+                 }}
+               >
+                 <option value="quarterly">Quarterly</option>
+                 <option value="monthly">Monthly</option>
+                 <option value="weekly">Weekly</option>
+               </select>
+             </div>
+             <div className="hidden sm:block h-8 w-px bg-gray-200 mx-1"></div>
+             <div className="flex flex-col">
                <label className="block text-[10px] font-bold text-gray-400 uppercase">ช่วงเวลา</label>
                <select 
                  className="bg-transparent border-none p-0 text-sm font-bold text-gray-700 focus:ring-0 cursor-pointer w-32"
