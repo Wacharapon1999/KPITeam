@@ -4,7 +4,7 @@ import Layout from '../components/Layout';
 import { useAppStore } from '../services/storage';
 import { UserRole, CompetencyRecord, EvaluationLevel, COMPETENCY_SCORES, COMPETENCY_LEVEL_DESC } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Calendar, Save, Calculator, AlertCircle } from 'lucide-react';
+import { User, Calendar, Save, AlertCircle, Check } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 const CompetencyAssessment = () => {
@@ -16,11 +16,25 @@ const CompetencyAssessment = () => {
   const [localRecords, setLocalRecords] = useState<Record<string, EvaluationLevel>>({});
   const [isSaving, setIsSaving] = useState(false);
 
-  // Initialize Period & Employee
+  // Years starting from 2026
+  const availableYears = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const startYear = 2026;
+    const endYear = Math.max(currentYear + 1, 2030); // Show at least up to 2030 or current+1
+    const years = [];
+    for (let y = startYear; y <= endYear; y++) {
+      years.push(y);
+    }
+    return years;
+  }, []);
+
+  // Initialize Period (Yearly) & Employee
   useEffect(() => {
-    const year = new Date().getFullYear();
-    // Default to Q1
-    setSelectedPeriod(`Q1-${year}`);
+    const currentYear = new Date().getFullYear();
+    const defaultYear = currentYear < 2026 ? 2026 : currentYear;
+    
+    // Use "Annual-Year" format for once-per-year assessment
+    setSelectedPeriod(`Annual-${defaultYear}`);
 
     if (user && user.role === UserRole.EMPLOYEE) {
       setSelectedEmpId(user.id);
@@ -71,12 +85,12 @@ const CompetencyAssessment = () => {
 
   const handleSaveAll = async () => {
     if (!selectedEmpId || !selectedPeriod) {
-      alert("Please select employee and period");
+      alert("กรุณาเลือกพนักงานและรอบการประเมิน");
       return;
     }
     
     if (Object.keys(localRecords).length === 0) {
-      alert("Please evaluate at least one competency");
+      alert("กรุณาเลือกผลการประเมินอย่างน้อย 1 หัวข้อ");
       return;
     }
 
@@ -84,12 +98,11 @@ const CompetencyAssessment = () => {
     try {
       const promises = competencies.map(comp => {
         const level = localRecords[comp.id];
-        if (!level) return Promise.resolve(); // Skip unanswered
+        if (!level) return Promise.resolve(); 
 
         const rawScore = COMPETENCY_SCORES[level];
         const weightedScore = (rawScore * comp.weight) / 100;
 
-        // Check if exists
         const existing = competencyRecords.find(
           r => r.employeeId === selectedEmpId && r.period === selectedPeriod && r.competencyId === comp.id
         );
@@ -122,7 +135,7 @@ const CompetencyAssessment = () => {
   const { totalScore, totalWeight } = calculateTotal();
 
   return (
-    <Layout title="แบบประเมิน Competency">
+    <Layout title="ประเมิน Competency (รายปี)">
       <div className="max-w-7xl mx-auto space-y-6">
 
         {/* --- Top Control Bar --- */}
@@ -136,15 +149,15 @@ const CompetencyAssessment = () => {
                )}
              </div>
              <div className="flex-1">
-               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">พนักงาน</label>
+               <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">ผู้รับการประเมิน</label>
                {user?.role === UserRole.MANAGER ? (
                  <select 
-                   className="font-bold text-gray-800 bg-transparent border-none p-0 focus:ring-0 cursor-pointer hover:text-brand-green transition-colors"
+                   className="font-bold text-gray-800 bg-transparent border-none p-0 focus:ring-0 cursor-pointer hover:text-brand-green transition-colors text-lg"
                    value={selectedEmpId}
                    onChange={e => setSelectedEmpId(e.target.value)}
                  >
                    <option value="">-- เลือกพนักงาน --</option>
-                   {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                   {employees.map(e => <option key={e.id} value={e.id}>{e.name} ({e.code})</option>)}
                  </select>
                ) : (
                  <div className="font-bold text-gray-800 text-lg">{selectedEmployee?.name || 'Loading...'}</div>
@@ -156,95 +169,84 @@ const CompetencyAssessment = () => {
              <Calendar className="w-5 h-5 text-gray-400 ml-2" />
              <div className="h-8 w-px bg-gray-200 mx-1"></div>
              <div>
-               <label className="block text-[10px] font-bold text-gray-400 uppercase">Quarter / Year</label>
+               <label className="block text-[10px] font-bold text-gray-400 uppercase">รอบการประเมิน (Annual)</label>
                <select 
-                 className="bg-transparent border-none p-0 text-sm font-bold text-gray-700 focus:ring-0 cursor-pointer w-32"
+                 className="bg-transparent border-none p-0 text-sm font-bold text-gray-700 focus:ring-0 cursor-pointer w-36"
                  value={selectedPeriod}
                  onChange={e => setSelectedPeriod(e.target.value)}
                >
-                 {[2023, 2024, 2025].flatMap(year => 
-                   ['Q1', 'Q2', 'Q3', 'Q4'].map(q => (
-                     <option key={`${q}-${year}`} value={`${q}-${year}`}>{q} / {year}</option>
-                   ))
-                 )}
+                 {availableYears.map(year => (
+                    <option key={year} value={`Annual-${year}`}>ประจำปี {year}</option>
+                 ))}
                </select>
              </div>
           </div>
         </div>
 
-        {/* --- Main Content --- */}
+        {/* --- Evaluation Table --- */}
         {!selectedEmpId ? (
-           <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200">
-             <p className="text-gray-400">กรุณาเลือกพนักงานเพื่อเริ่มการประเมิน</p>
+           <div className="text-center py-24 bg-white rounded-3xl border-2 border-dashed border-gray-200">
+             <User className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+             <p className="text-gray-400 font-medium">กรุณาเลือกพนักงานเพื่อเริ่มการประเมินสมรรถนะรายปี</p>
            </div>
         ) : (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-             
-             {/* Header */}
-             <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-brand-green to-[#005a35] text-white flex justify-between items-center">
-                <div>
-                  <h3 className="text-xl font-bold">Competency Assessment Form</h3>
-                  <p className="text-green-100 text-sm">แบบประเมินสมรรถนะหลัก (Core Competency)</p>
-                </div>
-                <div className="text-right">
-                   <div className="text-sm opacity-80">คะแนนรวม (Total Score)</div>
-                   <div className="text-3xl font-black">{totalScore.toFixed(2)} <span className="text-base font-normal opacity-70">/ {COMPETENCY_SCORES[EvaluationLevel.EP]}</span></div>
-                </div>
-             </div>
-
-             {/* Evaluation Table */}
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
              <div className="overflow-x-auto">
                <table className="w-full text-left border-collapse">
                  <thead>
-                   <tr className="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider border-b border-gray-200">
-                     <th className="p-4 w-12 text-center">#</th>
-                     <th className="p-4 w-1/4">ทักษะ (Competency)</th>
-                     <th className="p-4 w-1/4">ตัวชี้วัดพฤติกรรม</th>
-                     <th className="p-4 w-16 text-center">Weight</th>
-                     <th className="p-4 w-40 text-center">ระดับประเมิน</th>
-                     <th className="p-4 w-24 text-center">Raw Score</th>
-                     <th className="p-4 w-24 text-center">Weighted Score</th>
+                   <tr className="bg-gray-50/50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100">
+                     <th className="p-6 w-12 text-center">#</th>
+                     <th className="p-6">ทักษะ (COMPETENCY)</th>
+                     <th className="p-6">ตัวชี้วัดพฤติกรรม</th>
+                     <th className="p-6 text-center">WEIGHT</th>
+                     <th className="p-6 text-center w-48">ระดับประเมิน</th>
+                     <th className="p-6 text-center">RAW SCORE</th>
+                     <th className="p-6 text-center">WEIGHTED SCORE</th>
                    </tr>
                  </thead>
-                 <tbody className="divide-y divide-gray-100">
+                 <tbody className="divide-y divide-gray-50">
                    {competencies.map((comp, idx) => {
                      const currentLevel = localRecords[comp.id] || '';
                      const rawScore = currentLevel ? COMPETENCY_SCORES[currentLevel as EvaluationLevel] : 0;
                      const weighted = (rawScore * comp.weight) / 100;
                      
                      return (
-                       <tr key={comp.id} className="hover:bg-green-50/30 transition-colors">
-                         <td className="p-4 text-center font-bold text-gray-400">{idx + 1}</td>
-                         <td className="p-4 align-top">
-                            <div className="font-bold text-gray-800 mb-1">{comp.topic}</div>
-                            <div className="text-xs text-gray-500 leading-relaxed">{comp.definition}</div>
+                       <tr key={comp.id} className="hover:bg-gray-50/50 transition-colors">
+                         <td className="p-6 text-center font-bold text-gray-300 align-top">{idx + 1}</td>
+                         <td className="p-6 align-top max-w-xs">
+                            <div className="font-bold text-gray-800 text-sm mb-1.5 leading-snug">{comp.topic}</div>
+                            <div className="text-xs text-gray-400 leading-relaxed font-light">{comp.definition}</div>
                          </td>
-                         <td className="p-4 align-top text-sm text-gray-600 leading-relaxed">
+                         <td className="p-6 align-top text-xs text-gray-500 leading-relaxed max-w-sm">
                             {comp.behaviorIndicator}
                          </td>
-                         <td className="p-4 text-center font-bold text-gray-500">{comp.weight}%</td>
-                         <td className="p-4 align-top">
+                         <td className="p-6 text-center align-top">
+                            <span className="text-sm font-black text-gray-600">{comp.weight}%</span>
+                         </td>
+                         <td className="p-6 align-top">
                            <select 
-                             className={`w-full p-2 rounded-lg border text-sm font-bold focus:ring-2 focus:ring-brand-green outline-none transition-all
-                               ${currentLevel ? 'border-brand-green bg-green-50 text-brand-green' : 'border-gray-200 text-gray-500'}
+                             className={`w-full p-2.5 rounded-xl border text-xs font-bold focus:ring-4 focus:ring-brand-green/10 outline-none transition-all appearance-none
+                               ${currentLevel ? 'border-brand-green bg-green-50 text-brand-green' : 'border-gray-200 text-gray-400'}
                              `}
                              value={currentLevel}
                              onChange={(e) => handleScoreChange(comp.id, e.target.value as EvaluationLevel)}
                            >
                              <option value="">-- Select --</option>
-                             <option value={EvaluationLevel.EP}>EP - Role Model (130)</option>
-                             <option value={EvaluationLevel.CP}>CP - Coach (115)</option>
-                             <option value={EvaluationLevel.GP}>GP - Standard (100)</option>
-                             <option value={EvaluationLevel.PP}>PP - Partial (85)</option>
-                             <option value={EvaluationLevel.UP}>UP - Under (60)</option>
-                             <option value={EvaluationLevel.F}>F - Fail (0)</option>
+                             <option value={EvaluationLevel.EP}>EP (Role Model - 130)</option>
+                             <option value={EvaluationLevel.CP}>CP (Coach - 115)</option>
+                             <option value={EvaluationLevel.GP}>GP (Standard - 100)</option>
+                             <option value={EvaluationLevel.PP}>PP (Partial - 85)</option>
+                             <option value={EvaluationLevel.UP}>UP (Under - 60)</option>
+                             <option value={EvaluationLevel.F}>F (Fail - 0)</option>
                            </select>
                          </td>
-                         <td className="p-4 text-center font-medium text-gray-500">
-                            {rawScore}
+                         <td className="p-6 text-center align-top">
+                            <span className={`text-lg font-black ${rawScore > 0 ? 'text-gray-800' : 'text-gray-300'}`}>
+                              {rawScore}
+                            </span>
                          </td>
-                         <td className="p-4 text-center">
-                            <span className={`px-3 py-1 rounded-full font-bold text-sm ${currentLevel ? 'bg-green-100 text-brand-green' : 'bg-gray-100 text-gray-400'}`}>
+                         <td className="p-6 text-center align-top">
+                            <span className={`inline-block px-4 py-1.5 rounded-full font-black text-sm transition-all ${currentLevel ? 'bg-gray-100 text-gray-800' : 'bg-gray-50 text-gray-300'}`}>
                               {weighted.toFixed(2)}
                             </span>
                          </td>
@@ -252,29 +254,39 @@ const CompetencyAssessment = () => {
                      );
                    })}
                  </tbody>
-                 <tfoot className="bg-gray-50 font-bold text-gray-700">
-                    <tr>
-                      <td colSpan={3} className="p-4 text-right">รวม (Total)</td>
-                      <td className="p-4 text-center">{totalWeight}%</td>
+                 <tfoot className="bg-gray-50/30 border-t border-gray-100">
+                    <tr className="text-gray-800">
+                      <td colSpan={3} className="p-6 text-right font-black text-xs uppercase tracking-widest">รวม (Total)</td>
+                      <td className="p-6 text-center font-black text-sm">{totalWeight}%</td>
                       <td colSpan={2}></td>
-                      <td className="p-4 text-center text-brand-green text-lg">{totalScore.toFixed(2)}</td>
+                      <td className="p-6 text-center">
+                         <span className="text-2xl font-black text-brand-green">{totalScore.toFixed(2)}</span>
+                      </td>
                     </tr>
                  </tfoot>
                </table>
              </div>
 
              {/* Footer Actions */}
-             <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-between items-center">
-                <div className="flex items-center gap-2 text-xs text-gray-400">
-                   <AlertCircle className="w-4 h-4" />
-                   <span>คะแนนจะถูกคำนวณตามน้ำหนัก (Weight) ของแต่ละหัวข้อ</span>
+             <div className="p-8 border-t border-gray-50 bg-white flex flex-col sm:flex-row justify-between items-center gap-6">
+                <div className="flex items-start gap-3 text-xs text-gray-400 bg-gray-50 p-4 rounded-2xl max-w-md border border-gray-100">
+                   <AlertCircle className="w-4 h-4 shrink-0 text-brand-green" />
+                   <div className="leading-relaxed">
+                      <p className="font-bold text-gray-500 mb-1 underline decoration-brand-green underline-offset-4">เกณฑ์การคำนวณ</p>
+                      คะแนนจะคำนวณจาก (คะแนนดิบ x น้ำหนัก) / 100 <br/>
+                      โดยคะแนน GP คือมาตรฐาน (100) หากประเมินสูงกว่ามาตรฐานจะได้โบนัสคะแนนตามลำดับ
+                   </div>
                 </div>
                 <button 
                   onClick={handleSaveAll}
                   disabled={isSaving}
-                  className="px-6 py-3 bg-brand-green text-white rounded-xl font-bold shadow-lg shadow-brand-green/20 hover:bg-brand-green/90 active:scale-95 transition-all flex items-center gap-2 disabled:bg-gray-400"
+                  className="w-full sm:w-auto px-10 py-4 bg-brand-green text-white rounded-2xl font-bold text-lg shadow-xl shadow-brand-green/20 hover:bg-brand-green/90 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:bg-gray-300 disabled:shadow-none"
                 >
-                  <Save className="w-5 h-5" />
+                  {isSaving ? (
+                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <Save className="w-5 h-5" />
+                  )}
                   {isSaving ? 'กำลังบันทึก...' : 'บันทึกผลการประเมิน'}
                 </button>
              </div>
