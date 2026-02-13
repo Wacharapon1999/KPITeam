@@ -1,5 +1,5 @@
 
-import { Department, Employee, KPI, PeriodType, Assignment, Activity, KPIRecord, EvaluationLevel, LevelRule, UserRole } from '../types';
+import { Department, Employee, KPI, PeriodType, Assignment, Activity, KPIRecord, EvaluationLevel, LevelRule, UserRole, Competency, CompetencyRecord } from '../types';
 
 export const initialDepartments: Department[] = [
   { id: 'd1', code: 'IT', name: 'Information Technology', manager: 'John Doe' },
@@ -73,7 +73,6 @@ export const initialKPIs: KPI[] = [
     weight: 10,
     period: PeriodType.QUARTERLY,
     description: 'Quarterly Risk Assessment',
-    // evaluationRules not defined here, will be loaded from LevelRules below
   }
 ];
 
@@ -94,13 +93,67 @@ export const initialRecords: KPIRecord[] = [
   { id: 'r2', date: '2023-10-01', employeeId: 'e2', kpiId: 'k2', activityId: 'ac2', activityName: 'Interviewing', period: 'monthly', periodDetail: 'month-10-2023', level: EvaluationLevel.GP, score: 3, weight: 40, weightedScore: 1.2, note: 'หาคนได้ครบ 100% ตามเป้าหมาย\nปิดรับสมัครภายใน SLA 45 วัน', userNote: 'Met target' },
 ];
 
-// Sample LevelRules simulating data from "LevelRules" Sheet
 export const initialLevelRules: LevelRule[] = [
-  // Rules for KPI-03: Risk Management
   { id: 'lr_k3_f', kpiId: 'k3', level: EvaluationLevel.F, description: 'ไม่จัดทำการประเมินความเสี่ยงระดับหน่วยงาน\nไม่จัดทำหรือไม่ส่งแผนควบคุมความเสี่ยงภายในไตรมาส\nการประสานงานกับ Risk Owner มีปัญหา', employeeId: '', employeeName: '', kpiName: '' },
   { id: 'lr_k3_up', kpiId: 'k3', level: EvaluationLevel.UP, description: 'รวบรวมความเสี่ยงได้ต่ำกว่า 70% ของหน่วยงานที่รับผิดชอบ\nแผนควบคุมความเสี่ยงไม่ครบถ้วน หรือไม่เป็นไปตามรูปแบบที่กำหนด\nการประสานงานกับ Risk Owner มีปัญหา', employeeId: '', employeeName: '', kpiName: '' },
   { id: 'lr_k3_pp', kpiId: 'k3', level: EvaluationLevel.PP, description: 'รวบรวมความเสี่ยงได้ไม่ถึง 90%\nแผนควบคุมความเสี่ยงยังขาดความชัดเจนในบางส่วน\nการประสานงานกับ Risk Owner ไม่มีปัญหา', employeeId: '', employeeName: '', kpiName: '' },
   { id: 'lr_k3_gp', kpiId: 'k3', level: EvaluationLevel.GP, description: 'รวบรวมความเสี่ยงระดับหน่วยงานครบ 100% ภายในไตรมาส\nแผนควบคุมความเสี่ยงครบถ้วน ถูกต้องตามแบบฟอร์มที่กำหนด\nการประสานงานกับ Risk Owner ไม่มีปัญหา', employeeId: '', employeeName: '', kpiName: '' },
   { id: 'lr_k3_cp', kpiId: 'k3', level: EvaluationLevel.CP, description: 'รวบรวมความเสี่ยงครบ 100% ก่อนถึงกำหนดของแต่ละไตรมาส อย่างน้อย 2 ไตรมาส\nแผนควบคุมความเสี่ยงมีความเชื่อมโยงกับแนวโน้มความเสี่ยงของหน่วยงาน\nข้อมูลมีคุณภาพ พร้อมใช้ในการติดตามระดับองค์กร\nการประสานงานกับ Risk Owner ไม่มีปัญหา', employeeId: '', employeeName: '', kpiName: '' },
   { id: 'lr_k3_ep', kpiId: 'k3', level: EvaluationLevel.EP, description: 'รวบรวมและจัดทำความเสี่ยงครบ 100% ก่อนถึงกำหนดของแต่ละไตรมาส ทุกไตรมาส\nแผนควบคุมความเสี่ยงมีลักษณะเชิงป้องกันล่วงหน้า / เชิงปรับปรุง\nสนับสนุนข้อมูลเชิงลึกให้ผู้จัดการฝ่ายใช้ประกอบการตัดสินใจเชิงกลยุทธ์\nการประสานงานกับ Risk Owner ไม่มีปัญหา', employeeId: '', employeeName: '', kpiName: '' },
+];
+
+// --- Competency Mock Data ---
+export const initialCompetencies: Competency[] = [
+  {
+    id: 'c1',
+    code: '01',
+    topic: 'มีจริยธรรม ซื่อสัตย์ สุจริต และการไว้ใจ',
+    definition: 'มีความซื่อสัตย์ รับผิดชอบ โปร่งใส ปฏิบัติตามกฎระเบียบ และรักษาความไว้วางใจที่ผู้อื่นมีให้',
+    behaviorIndicator: 'ปฏิบัติตามกฎระเบียบองค์กร ไม่แสวงหาผลประโยชน์ส่วนตน และแสดงความซื่อสัตย์อย่างสม่ำเสมอ',
+    weight: 20
+  },
+  {
+    id: 'c2',
+    code: '02',
+    topic: 'การทำงานเป็นทีม',
+    definition: 'ทำงานร่วมกับผู้อื่นเพื่อเป้าหมายเดียวกัน สนับสนุนและเคารพความหลากหลาย',
+    behaviorIndicator: 'ทำงานร่วมกับทีม ร่วมมือ แบ่งปัน และสื่อสารอย่างสร้างสรรค์',
+    weight: 20
+  },
+  {
+    id: 'c3',
+    code: '03',
+    topic: 'ทักษะความสัมพันธ์ระหว่างบุคคล',
+    definition: 'สร้างความสัมพันธ์ที่ดีผ่านการสื่อสารอย่างเหมาะสม รับฟังความคิดเห็น และคำนึงถึงผู้อื่น ไม่ว่าจะเป็นเพื่อนร่วมงาน ลูกค้า หรือบุคคลภายนอก เพื่อเสริมสร้างความไว้วางใจและความร่วมมือในการทำงาน',
+    behaviorIndicator: 'แสดงมารยาทและปฏิสัมพันธ์อย่างเหมาะสมกับผู้ร่วมงานทุกกลุ่ม',
+    weight: 15
+  },
+  {
+    id: 'c4',
+    code: '04',
+    topic: 'การแก้ปัญหา',
+    definition: 'วิเคราะห์ปัญหาอย่างเป็นระบบ คิดหาแนวทางแก้ไขอย่างมีเหตุผล และลงมือแก้ไขได้จริง เพื่อให้บรรลุผลลัพธ์ที่ชัดเจนและยั่งยืน',
+    behaviorIndicator: 'แก้ปัญหาในงานประจำวันอย่างเหมาะสมและเป็นขั้นตอน',
+    weight: 15
+  },
+  {
+    id: 'c5',
+    code: '05',
+    topic: 'การพัฒนาตนเอง',
+    definition: 'เปิดรับการเรียนรู้ พัฒนาความสามารถ และปรับตัวต่อการเปลี่ยนแปลงของงานอยู่เสมอ เชื่อว่าทักษะสามารถพัฒนาได้ เรียนรู้จากข้อผิดพลาด และแสดงความมุ่งมั่นในการเติบโตในสายอาชีพ (Growth Mindset)',
+    behaviorIndicator: 'แสดงความพร้อมที่จะเรียนรู้ พัฒนาตนเองอย่างสม่ำเสมอ และสามารถนำสิ่งที่เรียนรู้ไปประยุกต์ใช้ในงานได้จริง',
+    weight: 15
+  },
+  {
+    id: 'c6',
+    code: '06',
+    topic: 'การบริหารจัดการเวลา',
+    definition: 'จัดลำดับความสำคัญของงาน วางแผน และใช้เวลาทำงานอย่างมีประสิทธิภาพ เพื่อให้งานสำเร็จตามเป้าหมายภายในเวลาที่กำหนด',
+    behaviorIndicator: 'บริหารเวลาเพื่อให้งานประจำสำเร็จตามกำหนด โดยสามารถจัดลำดับความสำคัญได้เหมาะสม และเตรียมงานล่วงหน้า',
+    weight: 15
+  }
+];
+
+export const initialCompetencyRecords: CompetencyRecord[] = [
+    // Mock data for display purposes if needed
 ];

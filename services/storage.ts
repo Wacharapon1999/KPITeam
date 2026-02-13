@@ -1,8 +1,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Department, Employee, KPI, Assignment, Activity, KPIRecord, LevelRule } from '../types';
+import { Department, Employee, KPI, Assignment, Activity, KPIRecord, LevelRule, Competency, CompetencyRecord } from '../types';
 import { GAS, API_URL } from './api';
-import { initialDepartments, initialEmployees, initialKPIs, initialAssignments, initialActivities, initialRecords, initialLevelRules } from './mockData';
+import { initialDepartments, initialEmployees, initialKPIs, initialAssignments, initialActivities, initialRecords, initialLevelRules, initialCompetencies, initialCompetencyRecords } from './mockData';
 
 interface AppState {
   departments: Department[];
@@ -12,6 +12,9 @@ interface AppState {
   activities: Activity[];
   records: KPIRecord[];
   levelRules: LevelRule[];
+  competencies: Competency[];
+  competencyRecords: CompetencyRecord[];
+
   loading: boolean;
   isDev: boolean; // Exposed to show status in UI
   
@@ -29,6 +32,7 @@ interface AppState {
   deleteAssignment: (id: string) => Promise<void>;
   saveRecord: (data: KPIRecord) => Promise<void>;
   deleteRecord: (id: string) => Promise<void>;
+  saveCompetencyRecord: (data: CompetencyRecord) => Promise<void>;
 }
 
 const AppContext = createContext<AppState | undefined>(undefined);
@@ -41,6 +45,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activities, setActivities] = useState<Activity[]>([]);
   const [records, setRecords] = useState<KPIRecord[]>([]);
   const [levelRules, setLevelRules] = useState<LevelRule[]>([]);
+  
+  // Competency State
+  const [competencies, setCompetencies] = useState<Competency[]>([]);
+  const [competencyRecords, setCompetencyRecords] = useState<CompetencyRecord[]>([]);
+
   const [loading, setLoading] = useState(true);
 
   // Check if we are in Google Apps Script environment OR have a valid API URL
@@ -98,6 +107,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setRecords(cleanRecords);
               
               setLevelRules(data.levelRules || initialLevelRules);
+
+              // Competency Data
+              setCompetencies(data.competencies && data.competencies.length > 0 ? normalize(data.competencies) : initialCompetencies);
+              setCompetencyRecords(normalize(data.competencyRecords));
             }
         } catch (e) {
             console.error("API Fetch failed, falling back to mock for safety", e);
@@ -109,6 +122,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setActivities(initialActivities);
                 setRecords(initialRecords);
                 setLevelRules(initialLevelRules);
+                setCompetencies(initialCompetencies);
+                setCompetencyRecords(initialCompetencyRecords);
             }
         }
       } else {
@@ -121,6 +136,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setActivities(initialActivities);
         setRecords(initialRecords);
         setLevelRules(initialLevelRules);
+        setCompetencies(initialCompetencies);
+        setCompetencyRecords(initialCompetencyRecords);
       }
     } catch (error) {
       console.error("Failed to fetch data", error);
@@ -180,7 +197,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const value: AppState = {
-    departments, employees, kpis, assignments, activities, records, levelRules, loading, isDev,
+    departments, employees, kpis, assignments, activities, records, levelRules, competencies, competencyRecords, loading, isDev,
     refreshData,
     saveDepartment: createSaver(setDepartments, 'saveDepartment'),
     deleteDepartment: createDeleter(setDepartments, 'deleteDepartment'),
@@ -194,6 +211,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     deleteAssignment: createDeleter(setAssignments, 'deleteAssignment'),
     saveRecord: createSaver(setRecords, 'saveRecord'),
     deleteRecord: createDeleter(setRecords, 'deleteRecord'),
+    saveCompetencyRecord: createSaver(setCompetencyRecords, 'saveCompetencyRecord'),
   };
 
   return React.createElement(AppContext.Provider, { value }, children);

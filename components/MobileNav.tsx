@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ClipboardEdit, Users, Building, ListTodo, CheckSquare, UserPlus, Menu, X, LogOut } from 'lucide-react';
+import { LayoutDashboard, ClipboardEdit, Users, Building, ListTodo, CheckSquare, UserPlus, Menu, X, LogOut, Award } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { UserRole } from '../types';
 
@@ -19,6 +19,7 @@ const MobileNav = () => {
   const allNavItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard', roles: [UserRole.MANAGER, UserRole.EMPLOYEE] },
     { path: '/record', icon: ClipboardEdit, label: 'บันทึก KPI', roles: [UserRole.MANAGER, UserRole.EMPLOYEE] },
+    { path: '/competency', icon: Award, label: 'ประเมิน Competency', roles: [UserRole.MANAGER, UserRole.EMPLOYEE] },
     { path: '/employees', icon: Users, label: 'จัดการพนักงาน', roles: [UserRole.MANAGER] },
     { path: '/departments', icon: Building, label: 'จัดการแผนก', roles: [UserRole.MANAGER] },
     { path: '/kpis', icon: ListTodo, label: 'จัดการ KPI', roles: [UserRole.MANAGER] },

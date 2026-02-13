@@ -14,6 +14,7 @@ import ManageDepartments from './pages/ManageDepartments';
 import ManageKPIs from './pages/ManageKPIs';
 import ManageActivities from './pages/ManageActivities';
 import ManageAssignments from './pages/ManageAssignments';
+import CompetencyAssessment from './pages/CompetencyAssessment';
 
 // Component to protect routes
 interface ProtectedRouteProps {
@@ -65,6 +66,7 @@ const AppRoutes = () => {
             
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/record" element={<ProtectedRoute><KPIRecord /></ProtectedRoute>} />
+            <Route path="/competency" element={<ProtectedRoute><CompetencyAssessment /></ProtectedRoute>} />
             
             <Route path="/employees" element={
               <ProtectedRoute roles={[UserRole.MANAGER]}><ManageEmployees /></ProtectedRoute>

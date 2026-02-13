@@ -46,7 +46,6 @@ export interface KPI {
   weight: number;
   period: PeriodType;
   description: string;
-  // New field: Map evaluation level to list of descriptions
   evaluationRules?: Partial<Record<EvaluationLevel, string[]>>;
 }
 
@@ -80,8 +79,31 @@ export interface KPIRecord {
   score: number;
   weight: number;
   weightedScore: number;
-  note: string;      // Stores the Rubric/Criteria description (System generated)
-  userNote?: string; // Stores the additional user comment (Manual input)
+  note: string;
+  userNote?: string;
+}
+
+// --- Competency Types ---
+
+export interface Competency {
+  id: string;
+  code: string; // e.g., C1, C2
+  topic: string; // e.g., "จริยธรรม ซื่อสัตย์..."
+  definition: string; // คำจำกัดความ
+  behaviorIndicator: string; // ตัวชี้วัดพฤติกรรม
+  weight: number; // e.g., 20
+}
+
+export interface CompetencyRecord {
+  id: string;
+  date: string;
+  employeeId: string;
+  competencyId: string;
+  period: string; // e.g., "Q1-2024"
+  level: EvaluationLevel;
+  score: number; // Raw score (0, 60, 85...)
+  weight: number;
+  weightedScore: number; // (score * weight) / 100
 }
 
 export interface LevelRule {
@@ -94,6 +116,7 @@ export interface LevelRule {
   description: string;
 }
 
+// KPI Scores (0-5)
 export const LEVEL_SCORES: Record<EvaluationLevel, number> = {
   [EvaluationLevel.F]: 0,
   [EvaluationLevel.UP]: 1,
@@ -101,6 +124,25 @@ export const LEVEL_SCORES: Record<EvaluationLevel, number> = {
   [EvaluationLevel.GP]: 3,
   [EvaluationLevel.CP]: 4,
   [EvaluationLevel.EP]: 5,
+};
+
+// Competency Scores (0-130)
+export const COMPETENCY_SCORES: Record<EvaluationLevel, number> = {
+  [EvaluationLevel.F]: 0,
+  [EvaluationLevel.UP]: 60,
+  [EvaluationLevel.PP]: 85,
+  [EvaluationLevel.GP]: 100,
+  [EvaluationLevel.CP]: 115,
+  [EvaluationLevel.EP]: 130,
+};
+
+export const COMPETENCY_LEVEL_DESC: Record<EvaluationLevel, string> = {
+  [EvaluationLevel.F]: 'ไม่บรรลุผลสำเร็จ',
+  [EvaluationLevel.UP]: 'ต่ำกว่าคาดหวัง',
+  [EvaluationLevel.PP]: 'มีประสิทธิภาพบางส่วน',
+  [EvaluationLevel.GP]: 'Standard (ตามเป้าหมาย)',
+  [EvaluationLevel.CP]: 'Coach (สม่ำเสมอ)',
+  [EvaluationLevel.EP]: 'Role Model (โดดเด่น)',
 };
 
 export const LEVEL_COLORS: Record<EvaluationLevel, string> = {
