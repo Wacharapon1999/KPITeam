@@ -20,9 +20,9 @@ const Sidebar = () => {
   };
 
   const allNavItems = [
-    { path: '/', icon: LayoutDashboard, label: 'Dashboard', roles: [UserRole.MANAGER, UserRole.EMPLOYEE] },
-    { path: '/record', icon: ClipboardEdit, label: 'บันทึก KPI', roles: [UserRole.MANAGER, UserRole.EMPLOYEE] },
-    { path: '/competency', icon: Award, label: 'ประเมิน Competency', roles: [UserRole.MANAGER, UserRole.EMPLOYEE] },
+    { path: '/', icon: LayoutDashboard, label: 'KPI Dashboard', roles: [UserRole.MANAGER, UserRole.EMPLOYEE] },
+    { path: '/record', icon: ClipboardEdit, label: 'KPI Detail', roles: [UserRole.MANAGER, UserRole.EMPLOYEE] },
+    { path: '/competency', icon: Award, label: 'Competency Assessment', roles: [UserRole.MANAGER, UserRole.EMPLOYEE] },
     { path: '/employees', icon: Users, label: 'จัดการพนักงาน', roles: [UserRole.MANAGER] },
     { path: '/departments', icon: Building, label: 'จัดการแผนก', roles: [UserRole.MANAGER] },
     { path: '/kpis', icon: ListTodo, label: 'จัดการ KPI', roles: [UserRole.MANAGER] },
